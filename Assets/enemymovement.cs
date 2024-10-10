@@ -1,47 +1,70 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class enemymovement : MonoBehaviour
 {
-    public float playermovementSpeed = 5f;
+    public Transform playerTranform;
+    [SerializeField] private float speed = 2;
+    SpriteRenderer spriteRenderer;
 
-    SpriteRenderer spriteRd;
-    Animator animatorContoller;
+    [SerializeField] private float chaseDistance = 3f;
+    [SerializeField] private float AttackDistance = 1f;
 
-    Rigidbody2D rbbody;
+
+
+
+
     void Start()
     {
-        rbbody = GetComponent<Rigidbody2D>();
-        spriteRd = GetComponent<SpriteRenderer>();
-        animatorContoller = GetComponent<Animator>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        float movementX = Input.GetAxis("Horizontal");
 
-        rbbody.velocity = new Vector2(movementX * playermovementSpeed, rbbody.velocity.y);
 
-        if (Math.Abs(rbbody.velocity.x) > 0)
+        if (Vector2.Distance(transform.position, playerTranform.position) <= chaseDistance)
         {
-            animatorContoller.SetInteger("switchAni", 1);
-        }
-        else
-        {
-            animatorContoller.SetInteger("switchAni", 0);
-        }
-
-        if (rbbody.velocity.x < 0)
-        {
-            spriteRd.flipX = true;
-        }
-        if (rbbody.velocity.x > 0)
-        {
-            spriteRd.flipX = false;
+            chaseState();
         }
 
     }
+
+    //StateMachine
+    void idelState() { }
+    void chaseState()
+    {
+        transform.position =
+            Vector2.MoveTowards(
+                transform.position,
+                playerTranform.position,
+                speed * Time.deltaTime
+                );
+
+        if (playerTranform.position.x < transform.position.x)
+        {
+            spriteRenderer.flipX = false;
+        }
+        else
+        {
+            spriteRenderer.flipX = true;
+        }
+    }
+    void attackState() { }
+
+
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, chaseDistance);
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, AttackDistance);
+    }
+
+
 }
